@@ -12,6 +12,7 @@ class Config:
     # Локальные настройки
     OUTPUT_DIR = os.getenv('OUTPUT_DIR', 'output')
     ENABLE_PRINTING = os.getenv('ENABLE_PRINTING', 'false').lower() == 'true'
+    PRINTER_NAME = os.getenv('PRINTER_NAME', '')  # Пустое значение = принтер по умолчанию
 
     # Flask настройки
     FLASK_HOST = '0.0.0.0'

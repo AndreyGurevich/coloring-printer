@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор раскрасок</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: normal;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            font-weight: 600;
+        }
+
+        .radio-option label:hover {
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .result img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .result-buttons a,
+        .result-buttons button {
+            flex: 1;
+            padding: 10px;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .result-buttons .download-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .result-buttons .print-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .result-buttons .new-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .result-buttons button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+        }
+
+        .nav-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .nav-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .nav-link a:hover {
+            text-decoration: underline;
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Генератор раскрасок</h1>
+
+        <form id="coloringForm">
+            <div class="form-group">
+                <label for="subject">Что нарисовать?</label>
+                <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    placeholder="Например: единорог, динозавр, замок..."
+                    required
+                    autofocus
+                >
+                <div class="info-text">Опишите, что вы хотите увидеть на раскраске</div>
+            </div>
+
+            <div class="form-group">
+                <label>Стиль рисунка</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="simple" name="style" value="simple" checked>
+                        <label for="simple">Простой</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="cartoon" name="style" value="cartoon">
+                        <label for="cartoon">Мультяшный</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="realistic" name="style" value="realistic">
+                        <label for="realistic">Реалистичный</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Уровень детализации</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="low" name="detail_level" value="low">
+                        <label for="low">Низкий</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="medium" name="detail_level" value="medium" checked>
+                        <label for="medium">Средний</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="high" name="detail_level" value="high">
+                        <label for="high">Высокий</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="print" name="print">
+                    <label for="print">Сразу отправить на печать</label>
+                </div>
+            </div>
+
+            <button type="submit">🖨️ Сделай раскраску!</button>
+        </form>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Генерируем раскраску, подождите...</p>
+        </div>
+
+        <div class="error"></div>
+
+        <div class="result">
+            <h3>Готово!</h3>
+            <img id="resultImage" src="" alt="Generated coloring page">
+            <div class="result-buttons">
+                <a id="downloadLink" href="" download class="download-btn">📥 Скачать</a>
+                <button type="button" id="printButton" onclick="printImage()" class="print-btn">🖨️ Напечатать</button>
+                <button type="button" onclick="resetForm()" class="new-btn">➕ Создать ещё</button>
+            </div>
+            <div id="printStatus" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
+        </div>
+
+        <div class="nav-link">
+            <a href="/gallery">📚 Посмотреть галерею</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('coloringForm');
+        const loading = document.querySelector('.loading');
+        const result = document.querySelector('.result');
+        const error = document.querySelector('.error');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const printButton = document.getElementById('printButton');
+        const printStatus = document.getElementById('printStatus');
+
+        let currentFilename = '';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Собираем данные формы
+            const formData = {
+                subject: document.getElementById('subject').value.trim(),
+                style: document.querySelector('input[name="style"]:checked').value,
+                detail_level: document.querySelector('input[name="detail_level"]:checked').value,
+                print: document.getElementById('print').checked
+            };
+
+            // Скрываем результаты и ошибки
+            result.style.display = 'none';
+            error.style.display = 'none';
+            printStatus.style.display = 'none';
+
+            // Показываем загрузку
+            loading.style.display = 'block';
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка генерации');
+                }
+
+                // Сохраняем имя файла для последующей печати
+                currentFilename = data.filename;
+
+                // Показываем результат
+                document.getElementById('resultImage').src = data.image_url;
+                document.getElementById('downloadLink').href = data.image_url;
+                document.getElementById('downloadLink').download = data.filename;
+
+                // Показываем статус печати если было напечатано
+                if (data.printed) {
+                    printStatus.style.display = 'block';
+                    printStatus.style.background = '#d4edda';
+                    printStatus.style.color = '#155724';
+                    printStatus.style.border = '1px solid #c3e6cb';
+                    printStatus.textContent = '✅ Отправлено на печать!';
+                }
+
+                result.style.display = 'block';
+
+                // Прокручиваем к результату
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (err) {
+                error.textContent = '❌ ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                submitButton.disabled = false;
+            }
+        });
+
+        async function printImage() {
+            if (!currentFilename) {
+                return;
+            }
+
+            printButton.disabled = true;
+            printButton.textContent = '⏳ Печатаем...';
+            printStatus.style.display = 'none';
+
+            try {
+                const response = await fetch('/print', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filename: currentFilename })
+                });
+
+                const data = await response.json();
+
+                printStatus.style.display = 'block';
+
+                if (data.success) {
+                    printStatus.style.background = '#d4edda';
+                    printStatus.style.color = '#155724';
+                    printStatus.style.border = '1px solid #c3e6cb';
+                    printStatus.textContent = '✅ ' + data.message;
+                } else {
+                    printStatus.style.background = '#f8d7da';
+                    printStatus.style.color = '#721c24';
+                    printStatus.style.border = '1px solid #f5c6cb';
+                    printStatus.textContent = '❌ ' + data.message;
+                }
+
+            } catch (err) {
+                printStatus.style.display = 'block';
+                printStatus.style.background = '#f8d7da';
+                printStatus.style.color = '#721c24';
+                printStatus.style.border = '1px solid #f5c6cb';
+                printStatus.textContent = '❌ Ошибка печати: ' + err.message;
+            } finally {
+                printButton.disabled = false;
+                printButton.textContent = '🖨️ Напечатать';
+            }
+        }
+
+        function resetForm() {
+            result.style.display = 'none';
+            printStatus.style.display = 'none';
+            currentFilename = '';
+            document.getElementById('subject').focus();
+        }
+    </script>
+</body>
+</html>
