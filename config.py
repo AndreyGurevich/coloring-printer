@@ -13,6 +13,7 @@ class Config:
     OUTPUT_DIR = os.getenv('OUTPUT_DIR', 'output')
     ENABLE_PRINTING = os.getenv('ENABLE_PRINTING', 'false').lower() == 'true'
     PRINTER_NAME = os.getenv('PRINTER_NAME', '')  # Пустое значение = принтер по умолчанию
+    LP_COMMAND_PATH = os.getenv('LP_COMMAND_PATH', '/usr/bin/lp')  # Полный путь к команде lp
 
     # Flask настройки
     FLASK_HOST = '0.0.0.0'

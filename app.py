@@ -96,15 +96,20 @@ def print_image(filepath: str) -> bool:
         return False
 
     try:
+        # Используем полный путь к команде lp
+        lp_path = Config.LP_COMMAND_PATH
+
         # Формируем команду печати
         if Config.PRINTER_NAME:
             # Печать на конкретный принтер
-            cmd = ['lp', '-d', Config.PRINTER_NAME, filepath]
+            cmd = [lp_path, '-d', Config.PRINTER_NAME, filepath]
             logger.info(f"Printing to printer: {Config.PRINTER_NAME}")
         else:
             # Печать на принтер по умолчанию
-            cmd = ['lp', filepath]
+            cmd = [lp_path, filepath]
             logger.info("Printing to default printer")
+
+        logger.info(f"Running command: {' '.join(cmd)}")
 
         result = subprocess.run(
             cmd,
@@ -118,8 +123,9 @@ def print_image(filepath: str) -> bool:
     except subprocess.CalledProcessError as e:
         logger.error(f"Print error: {e.stderr}")
         return False
-    except FileNotFoundError:
-        logger.error("lp command not found. Is CUPS installed?")
+    except FileNotFoundError as e:
+        logger.error(f"lp command not found at {Config.LP_COMMAND_PATH}: {e}")
+        logger.error("Try setting LP_COMMAND_PATH in .env to the full path (e.g., /usr/bin/lp)")
         return False
 
 
