@@ -50,7 +50,9 @@ def generate_coloring_page(subject: str, style: str = "simple", detail_level: st
     prompt = f"""Black and white coloring page of {subject}.
 {style_prompts.get(style, style_prompts['simple'])}.
 {detail_prompts.get(detail_level, detail_prompts['medium'])}.
-Clear outlines, no shading, no colors, white background, ready to print and color."""
+Clear outlines, no shading, no colors, white background, ready to print and color.
+IMPORTANT: Avoid large solid black filled areas (no more than 5% of the image should be solid black fill).
+All areas should have outlines only, designed to be colored in. Use patterns, lines, or details instead of solid fills."""
 
     logger.info(f"Generating coloring page with prompt: {prompt}")
 
