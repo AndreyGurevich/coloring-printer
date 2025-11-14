@@ -105,8 +105,11 @@ def print_image(filepath: str) -> bool:
             cmd = [
                 lp_path,
                 '-d', Config.PRINTER_NAME,
-                '-o', 'fit-to-page',  # Вписать в страницу
-                '-o', 'scaling=100',  # Масштаб 100%
+                '-o', 'fit-to-page',
+                '-o', 'preserve-aspect-ratio',
+                '-o', 'position=center',
+                '-o', 'print-quality=draft',  # черновой режим
+                '-o', 'Resolution=300dpi',  # понизить разрешение
                 filepath
             ]
             logger.info(f"Printing to printer: {Config.PRINTER_NAME}")
