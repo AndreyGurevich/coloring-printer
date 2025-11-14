@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 from config import Config
 import subprocess
+from PIL import Image
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +72,50 @@ Clear outlines, no shading, no colors, white background, ready to print and colo
         raise
 
 
+def pad_image_to_page_size(image_path: str, page_size: str) -> str:
+    """
+    Добавляет padding к изображению для соответствия пропорциям страницы
+
+    Args:
+        image_path: путь к исходному квадратному изображению
+        page_size: формат страницы (A4, Letter, и т.д.)
+
+    Returns:
+        путь к padded изображению
+    """
+    if page_size not in Config.PAGE_SIZES:
+        logger.warning(f"Unknown page size: {page_size}, using A4")
+        page_size = 'A4'
+
+    # Получаем соотношение сторон страницы
+    page_width, page_height = Config.PAGE_SIZES[page_size]
+    page_aspect_ratio = page_width / page_height
+
+    # Открываем исходное изображение
+    img = Image.open(image_path)
+    img_width, img_height = img.size
+
+    # Вычисляем новые размеры с учетом пропорций страницы
+    # Изображение квадратное (1024x1024), страница вертикальная (например, 210x297)
+    # Нужно добавить padding по высоте
+    new_width = img_width
+    new_height = int(img_width / page_aspect_ratio)
+
+    # Создаем новое изображение с белым фоном
+    padded_img = Image.new('RGB', (new_width, new_height), 'white')
+
+    # Вставляем исходное изображение по центру
+    offset_y = (new_height - img_height) // 2
+    padded_img.paste(img, (0, offset_y))
+
+    # Сохраняем padded версию
+    padded_path = image_path.replace('.png', '_padded.png')
+    padded_img.save(padded_path)
+
+    logger.info(f"Padded image saved to: {padded_path} (size: {new_width}x{new_height})")
+    return padded_path
+
+
 def download_image(url: str, subject: str) -> str:
     """Скачивает изображение локально"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -90,12 +135,23 @@ def download_image(url: str, subject: str) -> str:
 
 
 def print_image(filepath: str) -> bool:
-    """Печатает изображение"""
+    """
+    Печатает изображение
+
+    Args:
+        filepath: путь к оригинальному изображению (квадратному)
+
+    Returns:
+        True если печать успешна, False иначе
+    """
     if not Config.ENABLE_PRINTING:
         logger.info("Printing disabled in config")
         return False
 
     try:
+        # Создаем padded версию изображения для печати
+        padded_filepath = pad_image_to_page_size(filepath, Config.PAGE_SIZE)
+
         # Используем полный путь к команде lp
         lp_path = Config.LP_COMMAND_PATH
 
@@ -117,8 +173,8 @@ def print_image(filepath: str) -> bool:
             cmd.extend(options)
             logger.info(f"Using LP options: {Config.LP_OPTIONS}")
 
-        # Добавляем путь к файлу
-        cmd.append(filepath)
+        # Добавляем путь к padded файлу для печати
+        cmd.append(padded_filepath)
 
         logger.info(f"Running command: {' '.join(cmd)}")
 
@@ -128,8 +184,16 @@ def print_image(filepath: str) -> bool:
             text=True,
             check=True
         )
-        logger.info(f"Printed: {filepath}")
+        logger.info(f"Printed: {padded_filepath}")
         logger.info(f"Print output: {result.stdout}")
+
+        # Удаляем временный padded файл после печати
+        try:
+            os.remove(padded_filepath)
+            logger.info(f"Removed temporary padded file: {padded_filepath}")
+        except Exception as e:
+            logger.warning(f"Could not remove temporary file {padded_filepath}: {e}")
+
         return True
     except subprocess.CalledProcessError as e:
         logger.error(f"Print error: {e.stderr}")
@@ -137,6 +201,9 @@ def print_image(filepath: str) -> bool:
     except FileNotFoundError as e:
         logger.error(f"lp command not found at {Config.LP_COMMAND_PATH}: {e}")
         logger.error("Try setting LP_COMMAND_PATH in .env to the full path (e.g., /usr/bin/lp)")
+        return False
+    except Exception as e:
+        logger.error(f"Error during printing: {e}")
         return False
 
 
