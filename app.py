@@ -99,14 +99,25 @@ def print_image(filepath: str) -> bool:
         # Используем полный путь к команде lp
         lp_path = Config.LP_COMMAND_PATH
 
-        # Формируем команду печати
+        # Формируем команду печати с параметрами для сохранения пропорций
         if Config.PRINTER_NAME:
             # Печать на конкретный принтер
-            cmd = [lp_path, '-d', Config.PRINTER_NAME, filepath]
+            cmd = [
+                lp_path,
+                '-d', Config.PRINTER_NAME,
+                '-o', 'fit-to-page',  # Вписать в страницу
+                '-o', 'scaling=100',  # Масштаб 100%
+                filepath
+            ]
             logger.info(f"Printing to printer: {Config.PRINTER_NAME}")
         else:
             # Печать на принтер по умолчанию
-            cmd = [lp_path, filepath]
+            cmd = [
+                lp_path,
+                '-o', 'fit-to-page',  # Вписать в страницу
+                '-o', 'scaling=100',  # Масштаб 100%
+                filepath
+            ]
             logger.info("Printing to default printer")
 
         logger.info(f"Running command: {' '.join(cmd)}")
