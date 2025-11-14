@@ -99,29 +99,26 @@ def print_image(filepath: str) -> bool:
         # Используем полный путь к команде lp
         lp_path = Config.LP_COMMAND_PATH
 
-        # Формируем команду печати с параметрами для сохранения пропорций
+        # Формируем базовую команду печати
+        cmd = [lp_path]
+
+        # Добавляем принтер если указан
         if Config.PRINTER_NAME:
-            # Печать на конкретный принтер
-            cmd = [
-                lp_path,
-                '-d', Config.PRINTER_NAME,
-                '-o', 'fit-to-page',
-                '-o', 'preserve-aspect-ratio',
-                '-o', 'position=center',
-                '-o', 'print-quality=draft',  # черновой режим
-                '-o', 'Resolution=300dpi',  # понизить разрешение
-                filepath
-            ]
+            cmd.extend(['-d', Config.PRINTER_NAME])
             logger.info(f"Printing to printer: {Config.PRINTER_NAME}")
         else:
-            # Печать на принтер по умолчанию
-            cmd = [
-                lp_path,
-                '-o', 'fit-to-page',  # Вписать в страницу
-                '-o', 'scaling=100',  # Масштаб 100%
-                filepath
-            ]
             logger.info("Printing to default printer")
+
+        # Добавляем опции из .env если указаны
+        if Config.LP_OPTIONS:
+            # Разбиваем строку опций на отдельные аргументы
+            import shlex
+            options = shlex.split(Config.LP_OPTIONS)
+            cmd.extend(options)
+            logger.info(f"Using LP options: {Config.LP_OPTIONS}")
+
+        # Добавляем путь к файлу
+        cmd.append(filepath)
 
         logger.info(f"Running command: {' '.join(cmd)}")
 

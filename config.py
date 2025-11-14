@@ -14,6 +14,7 @@ class Config:
     ENABLE_PRINTING = os.getenv('ENABLE_PRINTING', 'false').lower() == 'true'
     PRINTER_NAME = os.getenv('PRINTER_NAME', '')  # Пустое значение = принтер по умолчанию
     LP_COMMAND_PATH = os.getenv('LP_COMMAND_PATH', '/usr/bin/lp')  # Полный путь к команде lp
+    LP_OPTIONS = os.getenv('LP_OPTIONS', '')  # Дополнительные опции для lp (например: "-o fit-to-page -o scaling=100")
 
     # Flask настройки
     FLASK_HOST = '0.0.0.0'
